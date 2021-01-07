@@ -39,9 +39,21 @@ func SocketServer() {
 	}
 	defer conn.Close()
 
-	rbuf := make([]byte, maxsize)
+	//rbuf := make([]byte, maxsize)
 	for size:=1; size<=maxsize; size*=2 {
-		_ = recv(rbuf, conn)
+		iter := 1
+		if size < 1024*2 {
+			iter = 100000
+		} else if size < 1024*32 {
+			iter = 10000
+		} else {
+			iter = 100
+		}
+		rbuf := make([]byte, size)
+		for i:=1; i<=iter; i++ {
+			_ = recv(rbuf, conn)
+		}
+		fmt.Printf("%v[B]\n", size)
 	}
 }
 
@@ -82,10 +94,14 @@ func SocketClient() {
 func recv(rbuf []byte, conn net.Conn) (int) {
 	recvbyte := 0	
 	for {
-		n, err := conn.Read(rbuf)
+		//recvbyte = 0	
+		_, err := io.ReadFull(conn, rbuf)
+		//n, err := conn.Read(rbuf)
 		//_, _ = f.Write(rbuf)
 		//_, err = io.Copy(ioutil.Discard, conn)
-		recvbyte += n
+		//recvbyte += n
+		//fmt.Println(recvbyte)
+		break
 		if err != nil {
 			if err == io.EOF {
 				break
